@@ -3,6 +3,12 @@ import numpy as np
 class TurtleKMeans():
 
     def __init__(self, K, memory_size):
+        '''
+        TurtleKMeans constructor.
+
+        :param K: The number of clusters.
+        :param memory_size: The size of the iteration history.
+        '''
 
         self.K = K
         self.memory_size = memory_size
@@ -13,6 +19,13 @@ class TurtleKMeans():
         pass
 
     def kmpp_init(self, points):
+        '''
+        Initializes the cluster centers, using a kmeans++ like algorithm.
+
+        :param points: The points from which the cluster centers are chosen.
+        '''
+
+        # points shape = (P, f)
 
         distances = None
         current_centers = None
@@ -43,6 +56,28 @@ class TurtleKMeans():
             self.cluster_centers = np.expand_dims(current_centers, axis=0)
 
     def partial_fit(self, points, lr, empty_lr):
+        '''
+        Moves the cluster centers towards the centers defined by the actual points.
+
+        If the points are partitioned into batches, but the fitting procedure must be carried
+        out on the whole point-set, this function can be used to partially fit the cluster centers
+        to the current points. This is achieved by calculating the updated cluster centers using the
+        traditional kmeans method, but the new centers are just interpolations between the old and the
+        updated centers. The coefficients of the interpolation are determined by the learning rate (lr)
+        parameter, so that when lr = 1.0 we get the classical kmeans algorithm. The empty learning rate
+        (empty_lr) determines the size of the stochastic movement of the currently empty clusters: each
+        empty cluster is moved towards another (attractor) cluster, that is chosen randomly. The closer
+        a cluster is to the empty cluster, the higher it's chance is to become an attractor. Also, the
+        bigger a cluster is, the higher it's chance is to become an attractor.
+
+        The updated attributes are the cluster_centers, cluster_sizes and cluster_counts. The new centers,
+        sizes, and counts are concatenated to these attributes, and if the history buffer exceeds the
+        memory_size, the oldest items are deleted.
+
+        :param points: A batch of points that perturb the new cluster centers.
+        :param lr: The learning rate, which is the perturbation size of the non-empty clusters.
+        :param empty_lr: The empty learning rate, which is the perturbation size of the empty clusters.
+        '''
 
         # points shape = (P, f)
 
@@ -134,19 +169,76 @@ class TurtleKMeans():
                     self.cluster_sizes = self.cluster_sizes[1:]
                     self.cluster_counts = self.cluster_counts[1:]
 
+    def predict(self, points):
+        '''
+        Predict the cluster correspondance of a point or multiple points.
+
+        :param points: The point or points we want to make the prediction for.
+        :return: The cluster-index correspondance for the point or for each point.
+        '''
+
+        # points shape = (P, f) or (f)
+
+        if len(points.shape) == 1:
+            points = np.expand_dims(points, axis=0)
+        
+        current_centers = np.copy(self.cluster_centers[-1])  # shape = (K, f)
+        
+        # Generate the cluster - point distances.
+        distance_map = np.expand_dims(current_centers, axis=0)  # shape = (1, K, f)
+        distance_map = distance_map - np.expand_dims(points, axis=1)  # shape = (P, K, f)
+        distance_map = np.sqrt(np.sum(np.square(distance_map), axis=2))  # shape = (P, K)
+
+        # Calculate the cluster index for each point.
+        distance_map = np.argmin(distance_map, axis=1)  # shape = (P)
+
+        return distance_map
+
     def mean_cluster_center_std(self):
+        '''
+        A convergence indicator.
+
+        Calculates the standard deviation of the coordinates along the history axis
+        and averages them.
+
+        :return: The average change in the coordinates.
+        '''
 
         return np.mean(np.std(self.cluster_centers, axis=0), axis=(0, 1))
 
     def mean_cluster_size_std(self):
+        '''
+        A convergence indicator.
+
+        Calculates the standard deviation of the cluster sizes along the history axis
+        and averages them.
+
+        :return: The average change in the cluster sizes.
+        '''
 
         return np.mean(np.std(self.cluster_sizes, axis=0), axis=0)
 
     def mean_cluster_count_std(self):
+        '''
+        A convergence indicator.
+
+        Calculates the standard deviation of the cluster counts along the history axis
+        and averages them.
+
+        :return: The average change in the cluster counts.
+        '''
 
         return np.mean(np.std(self.cluster_counts, axis=0), axis=0)
 
     def empty_cluster_occurrence(self):
+        '''
+        A convergence indicator.
+
+        Calculates the amount of empty clusters for each history point (in percentage) and
+        averages them.
+
+        :return: The average empty cluster occcurrence.
+        '''
 
         occurrences = list()
         for counts in self.cluster_counts:
