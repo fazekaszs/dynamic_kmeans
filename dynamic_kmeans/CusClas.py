@@ -99,13 +99,11 @@ class TurtleKMeans():
             # Calculate the cluster index for each point.
             distance_map = np.argmin(distance_map, axis=1)  # shape = (P)
 
-            # Collect the points for each center.
-            bag_of_points = [[] for _ in range(self.K)]
-            for point_index, cluster_index in enumerate(distance_map):                
-
-                bag_of_points[cluster_index].append(np.copy(points[point_index]))
-
-            bag_of_points = list(map(np.array, bag_of_points))  # a list of shape (cluster_count, f) points
+            # Collect the point indices for each center.
+            bags_of_indices = [[] for _ in range(self.K)]
+            for point_index, cluster_index in enumerate(distance_map):
+                bags_of_indices[cluster_index].append(point_index)
+            bags_of_indices = list(map(lambda x: np.array(x, dtype=np.intp), bags_of_indices))
 
             # Move each non-empty cluster towards the new centers.
             # Also, calculate the cluster counts and cluster sizes.
@@ -113,13 +111,16 @@ class TurtleKMeans():
             current_cluster_counts = np.zeros(self.K, dtype=int)
             for cluster_index in range(self.K):
 
-                current_cluster_counts[cluster_index] = bag_of_points[cluster_index].shape[0]
+                current_cluster_counts[cluster_index] = len(bags_of_indices[cluster_index])
 
                 if current_cluster_counts[cluster_index] != 0:
 
-                    new_center = np.mean(bag_of_points[cluster_index], axis=0)
+                    # Advanced indexing: from the points array take each elements with index i
+                    # that is present in bags_of_indices[cluster_index]. These are the points
+                    # that currently belong to the cluster with index cluster_index.
+                    new_center = np.mean(points[bags_of_indices[cluster_index]], axis=0)
 
-                    current_size = bag_of_points[cluster_index] - np.expand_dims(new_center, axis=0)
+                    current_size = points[bags_of_indices[cluster_index]] - np.expand_dims(new_center, axis=0)
                     current_size = np.sqrt(np.sum(np.square(current_size), axis=1))
                     current_size = np.mean(current_size)
 

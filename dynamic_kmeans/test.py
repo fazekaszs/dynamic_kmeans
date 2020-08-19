@@ -32,6 +32,7 @@ def generate_points():
 def plot_points(fig, km, center_std, size_std, count_std, empty_occur):
 
     plt.clf()
+    plt.tight_layout()
     gs = GridSpec(2, 4)
 
     ax_clus = fig.add_subplot(gs[:2, :2])
