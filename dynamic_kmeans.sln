@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "dynamic_kmeans", "dynamic_kmeans\dynamic_kmeans.pyproj", "{ECAFD216-7A3C-4F1D-9346-F8120EBBCB1E}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "turtle_kmeans", "dynamic_kmeans\turtle_kmeans.pyproj", "{ECAFD216-7A3C-4F1D-9346-F8120EBBCB1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -3,7 +3,6 @@ from matplotlib.gridspec import GridSpec
 import math
 import numpy as np
 from CusClas import TurtleKMeans
-import os
 
 def generate_points():
 
