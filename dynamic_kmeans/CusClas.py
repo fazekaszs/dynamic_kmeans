@@ -51,6 +51,7 @@ class TurtleKMeans():
                 new_distances = points - np.expand_dims(points[random_index], axis=0)  # shape = (P, f)
                 new_distances = np.sqrt(np.sum(np.square(new_distances), axis=1))  # shape = (P, )
                 new_distances = np.expand_dims(new_distances, axis=1)  # shape = (P, 1)
+
                 distances = np.concatenate([distances, new_distances], axis=1)
 
             self.cluster_centers = np.expand_dims(current_centers, axis=0)

@@ -72,7 +72,7 @@ empty_occur = list()
 
 fig = plt.figure()
 
-for i in range(5000):
+for i in range(3000):
 
     new_points = generate_points()
     km.partial_fit(new_points, lr, empty_lr)
